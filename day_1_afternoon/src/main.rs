@@ -25,6 +25,58 @@ fn main() {
     }
 
     print_tuple((12, 33));
+
+    // mutable reference
+    {
+        let a = 'A';
+        let b = 'B';
+        let mut r: &char = &a;
+        println!("r: {}", *r);
+        r = &b;
+        // *r = 'x'; // will err as even though the pointer is mutable the pointed value is not
+        println!("r: {}", *r);
+    }
+    ();
+
+    // exclusive references (mutates value stored in the pointed location)
+    {
+        let mut point = (1, 2);
+        // exclusive reference
+        let x_coord = &mut point.0;
+        // pointed value can then be changed
+        *x_coord = 20;
+        println!("point: {point:?}");
+    }
+    ();
+
+    // slices
+    {
+        #[allow(unused_mut)]
+        let mut a: [i32; 6] = [10, 20, 30, 40, 50, 60];
+        println!("a: {a:?}");
+
+        let s: &[i32] = &a[2..4];
+        
+        // a[3] = 99; // you cannot assing a value here as it is already borrowed into slice for memory safety
+
+        println!("s: {s:?}");
+    }
+    ();
+
+    // strings
+    {
+        let s1: &str = "World";
+        println!("s1: {s1}");
+    
+        let mut s2: String = String::from("Hello ");
+        println!("s2: {s2}");
+        s2.push_str(s1);
+        println!("s2: {s2}");
+    
+        let s3: &str = &s2[6..];
+        println!("s3: {s3}");
+    }();
+
 }
 
 fn print_tuple(tuple: (i32, i32)) {
