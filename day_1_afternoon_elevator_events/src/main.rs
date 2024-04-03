@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 type Floor = i32;
 #[derive(Debug)]
 /// An event in the elevator system that the controller must react to.

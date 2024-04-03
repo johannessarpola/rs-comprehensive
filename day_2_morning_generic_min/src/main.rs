@@ -1,11 +1,11 @@
 use std::cmp::Ordering;
 
-fn min<T: Ord>(l: T, r: T) -> T {
+fn min<T: Ord>(left: T, right: T) -> T {
     // https://doc.rust-lang.org/stable/std/cmp/trait.Ord.html
     // https://doc.rust-lang.org/stable/std/cmp/enum.Ordering.html
-    match l.cmp(&r) {
-        Ordering::Less | Ordering::Equal => l,
-        Ordering::Greater => r,
+    match left.cmp(&right) {
+        Ordering::Less | Ordering::Equal => left,
+        Ordering::Greater => right,
     }
 }
 
