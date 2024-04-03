@@ -9,6 +9,6 @@ members = [
     "day_1_morning",
     "day_1_morning_collatz",
     "day_2_morning",
-    "day_2_morning_expression_evaluator", "day_2_morning_generic_logger",
+    "day_2_morning_expression_evaluator", "day_2_morning_generic_functions", "day_2_morning_generic_logger", "day_2_morning_generic_min",
     "day_2_morning_methods_traits",
 ]
