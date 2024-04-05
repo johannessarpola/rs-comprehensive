@@ -75,24 +75,6 @@ impl<T: Ord> Subtree<T> {
     }
 }
 
-/// A node in the binary tree.
-#[derive(Debug)]
-struct Node<T: Ord> {
-    value: T,
-    left: Subtree<T>,
-    right: Subtree<T>,
-}
-
-impl<T: Ord> Node<T> {
-    fn new(value: T) -> Self {
-        Self {
-            value,
-            left: Subtree::new(),
-            right: Subtree::new(),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -137,4 +119,8 @@ mod tests {
         assert_eq!(tree.len(), 100);
         assert!(tree.has(&50));
     }
+}
+
+fn main() {
+    
 }
