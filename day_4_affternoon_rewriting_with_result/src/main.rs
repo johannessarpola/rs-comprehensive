@@ -1,3 +1,4 @@
+use thiserror::Error;
 use std::iter::Peekable;
 use std::str::Chars;
 
@@ -31,12 +32,18 @@ fn tokenize(input: &str) -> Tokenizer {
     return Tokenizer(input.chars().peekable());
 }
 
+#[derive(Debug, Error)]
+enum TokenizerError {
+    #[error("Unexpected character '{0}' in input")]
+    UnexpectedCharacter(char),
+}
+
 struct Tokenizer<'a>(Peekable<Chars<'a>>);
 
 impl<'a> Iterator for Tokenizer<'a> {
-    type Item = Token;
+    type Item = Result<Token, TokenizerError>;
 
-    fn next(&mut self) -> Option<Token> {
+    fn next(&mut self) -> Option<Result<Token, TokenizerError>> {
         let c = self.0.next()?;
         match c {
             '0'..='9' => {
@@ -45,7 +52,7 @@ impl<'a> Iterator for Tokenizer<'a> {
                     num.push(*c);
                     self.0.next();
                 }
-                Some(Token::Number(num))
+                Some(Ok(Token::Number(num)))
             }
             'a'..='z' => {
                 let mut ident = String::from(c);
@@ -53,46 +60,67 @@ impl<'a> Iterator for Tokenizer<'a> {
                     ident.push(*c);
                     self.0.next();
                 }
-                Some(Token::Identifier(ident))
+                Some(Ok(Token::Identifier(ident)))
             }
-            '+' => Some(Token::Operator(Op::Add)),
-            '-' => Some(Token::Operator(Op::Sub)),
-            _ => panic!("Unexpected character {c}"),
+            '+' => Some(Ok(Token::Operator(Op::Add))),
+            '-' => Some(Ok(Token::Operator(Op::Sub))),
+            _ => Some(Err(TokenizerError::UnexpectedCharacter(c))),
         }
     }
 }
 
-fn parse(input: &str) -> Expression {
+#[derive(Debug, Error)]
+enum ParserError {
+    #[error("Tokenizer error: {0}")]
+    TokenizerError(#[from] TokenizerError),
+    #[error("Unexpected end of input")]
+    UnexpectedEOI,
+    #[error("Unexpected token {0:?}")]
+    UnexpectedToken(Token),
+    #[error("Invalid number")]
+    InvalidNumber(#[from] std::num::ParseIntError),
+}
+
+fn parse(input: &str) -> Result<Expression, ParserError> {
     let mut tokens = tokenize(input);
 
-    fn parse_expr<'a>(tokens: &mut Tokenizer<'a>) -> Expression {
-        let Some(tok) = tokens.next() else {
-            panic!("Unexpected end of input");
-        };
+    fn parse_expr<'a>(
+        tokens: &mut Tokenizer<'a>,
+    ) -> Result<Expression, ParserError> {
+        let tok = tokens.next().ok_or(ParserError::UnexpectedEOI)??;
         let expr = match tok {
             Token::Number(num) => {
-                let v = num.parse().expect("Invalid 32-bit integer'");
+                let v = num.parse()?;
                 Expression::Number(v)
             }
             Token::Identifier(ident) => Expression::Var(ident),
-            Token::Operator(_) => panic!("Unexpected token {tok:?}"),
+            Token::Operator(_) => return Err(ParserError::UnexpectedToken(tok)),
         };
         // Look ahead to parse a binary operation if present.
-        match tokens.next() {
+        Ok(match tokens.next() {
             None => expr,
-            Some(Token::Operator(op)) => Expression::Operation(
+            Some(Ok(Token::Operator(op))) => Expression::Operation(
                 Box::new(expr),
                 op,
-                Box::new(parse_expr(tokens)),
+                Box::new(parse_expr(tokens)?),
             ),
-            Some(tok) => panic!("Unexpected token {tok:?}"),
-        }
+            Some(Err(e)) => return Err(e.into()), // macro seems to generate from for TokenizerError into a ParserError
+            Some(Ok(tok)) => return Err(ParserError::UnexpectedToken(tok)),
+        })
     }
 
     parse_expr(&mut tokens)
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let expr = parse("10+foo+20-30");
     println!("{expr:?}");
+
+    let expr = parse("100+");
+    println!("{expr:?}");
+
+    let expr = parse("100xxx");
+    println!("{expr:?}");
+    
+    Ok(())
 }
