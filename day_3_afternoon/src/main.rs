@@ -24,6 +24,7 @@ impl Node {
 // If a data type stores borrowed data, it must be annotated with a lifetime:
 struct Highlight<'doc>(&'doc str);
 
+#[allow(dead_code)]
 fn erase(text: String) {
     println!("Bye {text}!");
 }
