@@ -42,4 +42,6 @@ fn test_degenerate_cases() {
     assert_eq!(offset_differences(1, empty), vec![]);
 }
 
-fn main() {}
+fn main() {
+    offset_differences(1, vec![1, 3, 5, 7]);
+}

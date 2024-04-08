@@ -26,6 +26,6 @@ members = [
     "day_3_morning_builder",
     "day_3_morning_smart_pointers",
     "day_4_morning",
-    "day_4_morning_chaining",
+    "day_4_morning_chaining", "day_4_morning_luhn_algorithm", "day_4_morning_tests",
     "day_4_morning_widget_modules",
 ]
