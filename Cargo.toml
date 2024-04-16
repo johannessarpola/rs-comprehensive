@@ -33,4 +33,5 @@ members = [
     "day_4_morning_tests",
     "day_4_morning_widget_modules",
     "day_x_concurrency_morning",
+    "day_x_concurrency_morning_dining_philosophers",
 ]

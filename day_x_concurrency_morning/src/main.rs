@@ -153,22 +153,22 @@ fn main() {
 
 
     // arc + mutex
-    let v = Arc::new(Mutex::new(vec![10, 20, 30]));
+    let arc_mutex_vec = Arc::new(Mutex::new(vec![10, 20, 30]));
 
-    let cloned = Arc::clone(&v);
+    let cloned = Arc::clone(&arc_mutex_vec);
     let handle = thread::spawn(move || {
         let mut cloned = cloned.lock().unwrap();
         cloned.push(10);
     });
 
     {
-        let mut v = v.lock().unwrap();
-        v.push(1000);
+        let mut accessed_vec = arc_mutex_vec.lock().unwrap();
+        accessed_vec.push(1000);
     }
 
     handle.join().unwrap();
 
-    println!("v: {v:?}");
+    println!("v: {arc_mutex_vec:?}");
 
 
 }
