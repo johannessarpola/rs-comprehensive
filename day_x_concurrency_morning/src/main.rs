@@ -1,6 +1,6 @@
 use std::thread;
 use std::time::Duration;
-use std::sync::mpsc; // Multi-Producer, Single-Consumer
+use std::sync::{mpsc, Arc, Mutex}; // Multi-Producer, Single-Consumer
 
 // Normal thread cannot borrow from context: 
 // fn foo() {
@@ -124,4 +124,51 @@ fn main() {
     for msg in rx.iter() {
         println!("Main(bounded): got {msg}");
     }
+
+    // arc with multithreaded can be cloned
+    // arc === Atomic Reference Counted (Thread safe version of RC)
+    let v = Arc::new(vec![10, 20, 30]);
+    let mut handles = Vec::new();
+    for _ in 1..5 {
+        let v = Arc::clone(&v);
+        handles.push(thread::spawn(move || {
+            let thread_id = thread::current().id();
+            println!("{thread_id:?}: {v:?}");
+        }));
+    }
+
+    handles.into_iter().for_each(|h| h.join().unwrap());
+    println!("v: {v:?}");
+
+    // mutex
+    let v = Mutex::new(vec![10, 20, 30]);
+    println!("v: {:?}", v.lock().unwrap());
+
+    {
+        let mut guard = v.lock().unwrap();
+        guard.push(40);
+    }
+
+    println!("v: {:?}", v.lock().unwrap());
+
+
+    // arc + mutex
+    let v = Arc::new(Mutex::new(vec![10, 20, 30]));
+
+    let cloned = Arc::clone(&v);
+    let handle = thread::spawn(move || {
+        let mut cloned = cloned.lock().unwrap();
+        cloned.push(10);
+    });
+
+    {
+        let mut v = v.lock().unwrap();
+        v.push(1000);
+    }
+
+    handle.join().unwrap();
+
+    println!("v: {v:?}");
+
+
 }
